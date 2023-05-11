@@ -50,6 +50,21 @@ def get_pass(fiel_path, fiel_folder) :
     else: my_password = ''
     return my_password
 
+def wait_alert(action="") :
+    try:
+        WebDriverWait(driver, 3).until(EC.alert_is_present(),
+                                    'Timed out waiting for PA creation ' +
+                                    'confirmation popup to appear.')
+
+        alert = driver.switch_to.alert
+        if action == "acept" :
+            alert.accept()
+            print("alert exist and has been acepted")
+        elif action == "cancel" :
+            alert.dismiss()
+            print("alert exist and has been dismissed")
+    except TimeoutException:
+        print("no alert, no action there")
 
 ##############################################################################################################################
 #                                   AQUI EMPIEZA EN POCEDIMIENTO PRINCIPAL                                                   #                       
@@ -135,17 +150,7 @@ for fiel_folder in fiel_folders :                                               
     time.sleep(3)
 
     # Esperar a que salga el alert si es que sale. Si sale, darle en cancelar, si no sale, nada
-    try:
-        WebDriverWait(driver, 3).until(EC.alert_is_present(),
-                                    'Timed out waiting for PA creation ' +
-                                    'confirmation popup to appear.')
-
-        alert = driver.switch_to.alert
-        alert.dismiss()
-        print("alert exist and dismissed")
-    except TimeoutException:
-        print("no alert, no action there")
-
+    wait_alert(action="cancel")
 
     # Buscar el elemento con id "MainContent_wucConfigDeclaracion_wucDdlPeriodicidad_ddlCatalogo" 
     element = tryToFindElementById(driver, "MainContent_wucConfigDeclaracion_wucDdlPeriodicidad_ddlCatalogo", 10)
@@ -231,6 +236,31 @@ for fiel_folder in fiel_folders :                                               
     # Si lo encuentra, darle click
     if element != None: element.click()
     time.sleep(3)
+
+    # Ahora nos sadrá un alert el cuál hay que aceptar
+    # Esperar a que salga el alert si es que sale. Si sale, darle en cancelar, si no sale, nada
+    wait_alert(action="acept")
+    time.sleep(5)
+
+    obligaciones = driver.find_elements(By.XPATH, '//*[@id="divObligacionOtras"]/a/div/div/strong')
+
+    for ob in obligaciones:
+        
+        ob.click()
+
+        form_divs = driver.find_elements(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[1]/div[3]/div/div[1]/div[2]/div/div/div[2]/div') # obtain all child divs of div container
+        for div in form_divs:
+            children_div = div.find_elements(By.XPATH, './*') # obtain all child of child of div container
+            if len(children_div) == 2 :
+                if children_div[1].tag_name == 'i': # Para los select tengo que seleccionar 'No', y para los input tengo que escribir '0'
+                    if children_div[0].tag_name == 'select' :
+                        select = Select(children_div[0])
+                        select.select_by_visible_text('No') # Seleccionando 'No' en selects
+                    else:
+                        children_div[0].send_keys('0')  # Escribiendo '0' en inputs
+
+
+        # Tendía que ir al siguente paso, ya sea cambiar de obligacion o guardar la ya fullfilled
 
     # wait for user input
     xx = input("Presione cualquier tecla para continuar")
