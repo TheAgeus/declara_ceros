@@ -240,15 +240,22 @@ for fiel_folder in fiel_folders :                                               
     # Ahora nos sadrá un alert el cuál hay que aceptar
     # Esperar a que salga el alert si es que sale. Si sale, darle en cancelar, si no sale, nada
     wait_alert(action="acept")
-    time.sleep(5)
+    time.sleep(10)
 
     obligaciones = driver.find_elements(By.XPATH, '//*[@id="divObligacionOtras"]/a/div/div/strong')
 
     for ob in obligaciones:
         
         ob.click()
+        time.sleep(3)
 
-        form_divs = driver.find_elements(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[1]/div[3]/div/div[1]/div[2]/div/div/div[2]/div') # obtain all child divs of div container
+        form_divs = None
+        if ob.get_attribute('innerHTML') == "ISR PERSONAS FÍSICAS, ACTIVIDAD EMPRESARIAL Y PROFESIONAL":
+            form_divs = driver.find_elements(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[1]/div[3]/div/div[1]/div[2]/div/div/div[2]/div') # obtain all child divs of div container
+        else:
+            form_divs = driver.find_elements(By.XPATH, '//html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[2]/div[3]/div/div[1]/div[2]/div/div/div[2]/div')
+        
+        
         for div in form_divs:
             children_div = div.find_elements(By.XPATH, './*') # obtain all child of child of div container
             if len(children_div) == 2 :
@@ -258,12 +265,42 @@ for fiel_folder in fiel_folders :                                               
                         select.select_by_visible_text('No') # Seleccionando 'No' en selects
                     else:
                         children_div[0].send_keys('0')  # Escribiendo '0' en inputs
+                        pyautogui.press("tab")
 
 
-        # Tendía que ir al siguente paso, ya sea cambiar de obligacion o guardar la ya fullfilled
+        determinacion_pago = None
+        if ob.get_attribute('innerHTML') == "ISR PERSONAS FÍSICAS, ACTIVIDAD EMPRESARIAL Y PROFESIONAL":
+            determinacion_pago = driver.find_element(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[1]/div[3]/ul/li[2]')
+        else:
+            determinacion_pago = driver.find_element(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[2]/div[3]/ul/li[2]')
+        
+        action = ActionChains(driver)
+        action.move_to_element(determinacion_pago).click().perform()
+        time.sleep(3)
 
+        menu_principal = None
+        if ob.get_attribute('innerHTML') == "ISR PERSONAS FÍSICAS, ACTIVIDAD EMPRESARIAL Y PROFESIONAL":
+            menu_principal = driver.find_element(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[1]/div[2]/div/button[1]')
+        else:
+            menu_principal = driver.find_element(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[2]/div[2]/div/button[1]')
+        menu_principal.click()
+        time.sleep(3)
+
+
+    enviar_declaracion = driver.find_element(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[4]/div/div[1]/div[5]/div/a[2]')
+    action = ActionChains(driver)
+    action.move_to_element(enviar_declaracion).click().perform()
+
+    time.sleep(3)
+
+    element = driver.find_element(By.XPATH, "//*[text()='Sí']")
+    action = ActionChains(driver)
+    action.move_to_element(element).click().perform()
     # wait for user input
+    
     xx = input("Presione cualquier tecla para continuar")
+
+
 
     # Close the browser
     driver.quit()
