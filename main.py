@@ -8,8 +8,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import ActionChains
 
-# Para trabajar con excel
-import openpyxl
 
 # Para trabajar con el teclado y mouse
 import pyperclip
@@ -21,6 +19,14 @@ import pathlib
 import os
 import glob
 import datetime
+
+def getRFCfromTopDirectory(directory, endChar):
+    result = ""
+    for c in directory:
+        if c != endChar:
+            result += c
+        else:
+            return result
 
 def workaroundWrite(text):
     pyperclip.copy(text)
@@ -77,17 +83,12 @@ ERRORS_PATH = ROOT_PATH.__str__() + "\\ERRORS\\"                        # Direct
 CURRENT_MONTH = datetime.datetime.now().month                           # El mes actual
 CURRENT_YEAR = datetime.datetime.now().year                             # El año actual
 
+already_downloaded = [getRFCfromTopDirectory(f, '.') for f in os.listdir(SAVE_PATH)]
+print(already_downloaded)
 fiel_folders = [d for d in os.listdir(FIEL_PATH) if os.path.isdir(os.path.join(FIEL_PATH, d))]  # Nombre de la carpeta del empresario
-data_file = ROOT_PATH.__str__() + "\\data.xlsx" # El archivo de excel
+remaining = [rfc for rfc in fiel_folders if getRFCfromTopDirectory(rfc, '_') not in already_downloaded] # Los que faltan por generar
 
-
-#xlsx = openpyxl.Workbook()
-#sheet = xlsx.active
-#for i in range(len(fiel_folders)) :
-#    sheet['A' + str(i + 1)] = fiel_folders[i]
-#xlsx.save('data.xlsx')
-
-for fiel_folder in fiel_folders :                                                   # Para cada carpeta en la carpeta "FIEL"
+for fiel_folder in remaining :                                                   # Para cada carpeta en la carpeta "FIEL"
 
     # Obteniendo las tres cosas necesarias para entrar al sistema del sat por medio de e.firma
 
@@ -292,15 +293,44 @@ for fiel_folder in fiel_folders :                                               
     action.move_to_element(enviar_declaracion).click().perform()
 
     time.sleep(3)
+   
+    pyautogui.press("tab") # aqui ya estamos en el si
 
-    element = driver.find_element(By.XPATH, "//*[text()='Sí']")
-    action = ActionChains(driver)
-    action.move_to_element(element).click().perform()
-    # wait for user input
-    
+    pyautogui.press("enter") # damos enter
+ 
+    time.sleep(3) # Le damos 3 segundos
+
+    for i in range(18) : pyautogui.press("tab") # llegar al icono de imprimir en Edge
+        
+    pyautogui.press("enter") # enter en icono de imprimir
+
+    time.sleep(3)
+
+    pyautogui.press("tab") # 1 tamb para llegar a la impresora aselccionar
+
+    pyautogui.press("enter")   # enter para abrir el select
+
+    time.sleep(3) 
+
+    for i in range(20) : pyautogui.press("up") # Nos aseguramos que sea la de guardar como pdf
+
+    pyautogui.press("enter") # la seleccionamos con un enter
+
+    time.sleep(3)
+
+    for i in range(5) : pyautogui.press("tab")  # para llegar al boton de guardar
+
+    pyautogui.press("enter")    # damos enter para presionar el boton
+
+    time.sleep(3)
+
+    workaroundWrite(SAVE_PATH + current_rfc)   # escribimos la ruta para que se guarde el pdf
+
+    pyautogui.press("enter") # guardamos preisonando enter
+
+    time.sleep(3)
+
     xx = input("Presione cualquier tecla para continuar")
-
-
 
     # Close the browser
     driver.quit()
