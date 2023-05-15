@@ -171,7 +171,7 @@ for fiel_folder in remaining :                                                  
         continue
 
     # Esperar a que salga el alert si es que sale. Si sale, darle en cancelar, si no sale, nada
-    wait_alert(action="cancel")
+    alert = wait_alert(action="cancel")
 
     # No hay alert
     #if alert == -1 :
@@ -246,7 +246,16 @@ for fiel_folder in remaining :                                                  
     pyautogui.press("enter")
     time.sleep(1)
 
-    if alert == -1:
+    # Debería salir un botón con texto "Complementaria" si es que ya esta declarado
+    element = tryToFindElementById(driver, "MainContent_btnComplementaria", 10)
+    if element != None : 
+        f = open(SAVE_PATH + getRFCfromTopDirectory(fiel_folder, '_') + '.txt', "w+")
+        f.write("Salió el boton de complementaria")
+        f.close()
+        driver.close()
+        continue
+
+    #if alert == -1:
         element = tryToFindElementById(driver, "MainContent_btnComplementaria", 10)
         element.click()
         time.sleep(2)
