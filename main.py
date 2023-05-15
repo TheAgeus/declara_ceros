@@ -2,6 +2,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import UnexpectedAlertPresentException
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -41,7 +42,7 @@ def tryToFindElementById(driver, elementName, timeout) :
         try :
             element = driver.find_element(By.ID, elementName)
             print("Elemento encontrado ", elementName)
-        except NoSuchElementException :
+        except (NoSuchElementException, UnexpectedAlertPresentException) as e:
             print("Error encontrando ", elementName)
             segundos = segundos + 1
             time.sleep(1)
@@ -66,11 +67,14 @@ def wait_alert(action="") :
         if action == "acept" :
             alert.accept()
             print("alert exist and has been acepted")
+            return 1
         elif action == "cancel" :
             alert.dismiss()
             print("alert exist and has been dismissed")
+            return 1
     except TimeoutException:
         print("no alert, no action there")
+        return -1
 
 ##############################################################################################################################
 #                                   AQUI EMPIEZA EN POCEDIMIENTO PRINCIPAL                                                   #                       
@@ -94,7 +98,14 @@ for fiel_folder in remaining :                                                  
 
     ruta_certificado = glob.glob(FIEL_PATH + fiel_folder + "\\*.cer")[0]        # Certificado
     ruta_clave_privada = glob.glob(FIEL_PATH + fiel_folder + "\\*.key")[0]      # Clave Privada
-    password = get_pass(FIEL_PATH, fiel_folder)                                 # Contraseña
+    password = ""
+    try:
+        password = get_pass(FIEL_PATH, fiel_folder)                                 # Contraseña
+    except(IndexError):
+        f = open(SAVE_PATH + getRFCfromTopDirectory(fiel_folder, '_') + '.txt', "w+")
+        f.write("No hay Contraseña")
+        f.close()
+        continue
 
     # Create a new instance of the Edge driver
     driver = webdriver.Edge()
@@ -150,16 +161,46 @@ for fiel_folder in remaining :                                                  
     if element != None: element.click()
     time.sleep(3)
 
+    # Login error
+    element = tryToFindElementById(driver, "divError", 1)
+    if element != None:
+        f = open(SAVE_PATH + getRFCfromTopDirectory(fiel_folder, '_') + '.txt', "w+")
+        f.write(element.get_attribute('innerHTML'))
+        f.close()
+        driver.close()
+        continue
+
     # Esperar a que salga el alert si es que sale. Si sale, darle en cancelar, si no sale, nada
     wait_alert(action="cancel")
 
+    # No hay alert
+    #if alert == -1 :
+    #    f = open(SAVE_PATH + getRFCfromTopDirectory(fiel_folder, '_') + '.txt', "w+")
+    #    f.write("No salio el alert")
+    #    f.close()
+    #    driver.close()
+    #    continue
+    #    driver.get('https://ptscdecprov.clouda.sat.gob.mx/Paginas/ConfigDeclaracion.aspx')
+    #    time.sleep(1)
+            
     # Buscar el elemento con id "MainContent_wucConfigDeclaracion_wucDdlPeriodicidad_ddlCatalogo" 
+    # Input para la periodicidad
     element = tryToFindElementById(driver, "MainContent_wucConfigDeclaracion_wucDdlPeriodicidad_ddlCatalogo", 10)
+
+    if element == None :
+        f = open(SAVE_PATH + getRFCfromTopDirectory(fiel_folder, '_') + '.txt', "w+")
+        f.write("No redirigio al form")
+        f.close()
+        driver.close()
+        continue
+    #    driver.get('https://ptscdecprov.clouda.sat.gob.mx/Paginas/ConfigDeclaracion.aspx')
+    #    time.sleep(1)
 
     # Crear un elemento tipo select para poder manipularlo
     select = Select(element)
 
     # Elegir el elemento 2
+    # Elegir mensual
     select.select_by_index(1)
 
     # Esto es para darle tiempo a la página de regresar los datos de los select 
@@ -187,6 +228,7 @@ for fiel_folder in remaining :                                                  
         
 
     # Buscar el elemento con el id "MainContent_wucConfigDeclaracion_wucDdlPeriodoFiscal_ddlCatalogo"
+    # Selccionando el mes
     element = tryToFindElementById(driver, "MainContent_wucConfigDeclaracion_wucDdlPeriodoFiscal_ddlCatalogo", 10)
 
     # Crear un elemento tipo select para poder manipularlo
@@ -196,23 +238,34 @@ for fiel_folder in remaining :                                                  
     select.select_by_index(previous_month)    
     time.sleep(3)
 
+    # Presionar siguiente
     for i in range(5):
         pyautogui.press("tab")
         time.sleep(1)
-
     # Presionar enter
     pyautogui.press("enter")
     time.sleep(1)
 
-    element = tryToFindElementById(driver, "MainContent_wucObligaciones_ImgOtrasOblig", 10)
+    if alert == -1:
+        element = tryToFindElementById(driver, "MainContent_btnComplementaria", 10)
+        element.click()
+        time.sleep(2)
+        
 
-    # Si lo encuentra, darle click
-    if element != None: element.click()
-    time.sleep(3)
+        element = tryToFindElementById(driver, "MainContent_btnSiguiente", 10)
+        element.click()
+        time.sleep(2)
+
+    else:
+        element = tryToFindElementById(driver, "MainContent_wucObligaciones_ImgOtrasOblig", 10)
+        element.click()
+        time.sleep(2)
+    
 
     # Ahora hay que buscar en la tabla "MainContent_wucObligaciones_rptGvOtrasObligaciones_gvOtrasObligaciones_0"
     # todos los tr que tengan td que tengan span que tenga de inner html "IMPUESTO AL VALOR AGREGADO"
     # "ISR PERSONAS FÍSICAS, ACTIVIDAD EMPRESARIAL Y PROFESIONAL"
+    
     rows = driver.find_elements(By.XPATH, '//table//tr')
 
     # loop through the rows to find the desired td element
@@ -279,6 +332,13 @@ for fiel_folder in remaining :                                                  
         action.move_to_element(determinacion_pago).click().perform()
         time.sleep(3)
 
+        datos_adicionales = None
+        if ob.get_attribute('innerHTML') == "ISR PERSONAS FÍSICAS, ACTIVIDAD EMPRESARIAL Y PROFESIONAL":
+            datos_adicionales = driver.find_element(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[1]/div[3]/ul/li[3]')
+            action = ActionChains(driver)
+            action.move_to_element(datos_adicionales).click().perform()
+            time.sleep(3)
+
         menu_principal = None
         if ob.get_attribute('innerHTML') == "ISR PERSONAS FÍSICAS, ACTIVIDAD EMPRESARIAL Y PROFESIONAL":
             menu_principal = driver.find_element(By.XPATH, '/html/body/div/div[2]/div/div/div/div[1]/form/div[1]/div[5]/div[1]/div[2]/div/button[1]')
@@ -324,7 +384,7 @@ for fiel_folder in remaining :                                                  
 
     time.sleep(3)
 
-    workaroundWrite(SAVE_PATH + current_rfc)   # escribimos la ruta para que se guarde el pdf
+    workaroundWrite(SAVE_PATH + getRFCfromTopDirectory(fiel_folder, '_'))   # escribimos la ruta para que se guarde el pdf
 
     pyautogui.press("enter") # guardamos preisonando enter
 
