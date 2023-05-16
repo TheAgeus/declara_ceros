@@ -86,6 +86,23 @@ def tryToFindElementById(driver=None, elementName='', timeout=0) :
     return element
 
 
+def tryToFindElementsByXpath(driver=None, elementsPath='', timeout=0) : 
+    segundos = 0
+    elements = None
+    a = '..'
+    b = '...'
+    for i in range(timeout) :
+        print(f'Buscando: {elementsPath} {a if segundos % 3 == 1 else b}')
+        try :
+            element = driver.find_elements(By.XPATH, elementsPath)
+            print("Elementos encontrados!! => ", elementsPath)
+            break
+        except (NoSuchElementException, UnexpectedAlertPresentException) as e:
+            time.sleep(1)
+            segundos = segundos + 1
+    return elements
+
+
 def workaroundWrite(text):
     pyperclip.copy(text)
     pyautogui.hotkey('ctrl', 'v')
@@ -220,6 +237,37 @@ def fill_fields_first_form(web_driver=None, fiel_folder='', save_path='') :
     tabs_and_press(num_tabs=5, press='enter', wait=0.5)
     return True
 
+
+def check_obligaciones(web_driver=None, fiel_folder='', save_path='') :
+    rows = tryToFindElementsByXpath(web_driver=web_driver, elementsPath='//table//tr', timeout=3)
+    if rows == None : 
+        writeError(msg="No se encontraron los checkboxes", fiel_folder=fiel_folder, save_path=save_path)
+        return False
+    try :
+        for row in rows :
+            td_elements = row.find_elements(By.XPATH, './/td')
+            if len(td_elements) >= 2:
+                second_td_element = td_elements[1]
+                # find the span element in the second td element
+                span_elements = second_td_element.find_elements(By.XPATH, './/span')
+                span_element = span_elements[0]
+
+                print(span_element.get_attribute('innerHTML'))
+                span_text = span_element.get_attribute('innerHTML')
+                if span_text == 'IMPUESTO AL VALOR AGREGADO' or span_text == 'ISR PERSONAS FÍSICAS, ACTIVIDAD EMPRESARIAL Y PROFESIONAL':
+                    frist_td_checkbox_list = td_elements[0].find_elements(By.XPATH, './/input')
+                    first_td_checkbox = frist_td_checkbox_list[0]
+                    first_td_checkbox.click()
+    except:
+        writeError(msg="Error tratando de checar los checkboxes", fiel_folder=fiel_folder, save_path=save_path)
+        return False
+    
+    result = click_element(web_driver=web_driver,elementId='MainContent_btnSiguiente', fiel_folder=fiel_folder, save_path=save_path)
+    if result == None : return False
+    
+    wait_alert(action="acept")
+
+    return True
 ##############################################################################################################################
 #                                   AQUI EMPIEZA EN POCEDIMIENTO PRINCIPAL                                                   #                       
 ##############################################################################################################################
@@ -266,6 +314,16 @@ for fiel_folder in remaining :
 
     # Llenar el primer login y darle a siguiente
     result = fill_fields_first_form(web_driver=driver, fiel_folder=fiel_folder, save_path=SAVE_PATH)
+    if not result : continue
 
     # Checar si sí apareció lo que tenía que aparecer
-    
+    result = check_obligaciones(web_driver=driver, fiel_folder=fiel_folder, save_path=SAVE_PATH)
+    if not result : continue
+
+    result = fill_red_inputs_selects() 
+
+    result = enviar_declaracion()
+
+    result = guardar_pdf()
+
+    driver.quit()
