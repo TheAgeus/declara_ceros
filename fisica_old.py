@@ -482,10 +482,10 @@ for fiel_folder in remaining :
 
     time.sleep(2)
 
-    workaroundWrite(SAVE_PATH + rfc + ".pdf")
-    pyautogui.press("enter")
+workaroundWrite(SAVE_PATH + rfc + ".pdf")
+pyautogui.press("enter")
 
-    time.sleep(5)
+time.sleep(5)
  
-    driver.quit()
+driver.quit()
 

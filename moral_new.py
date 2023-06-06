@@ -185,11 +185,172 @@ def wait_for_timeout(webdriver=None, id="", path="", desc="", timeout=0):
 
     return element
 
+def isr_simplificado_de_confianza_personas_morales(mydriver=None) :
+    
+    # INGRESO TAB
+    supuestos_inputs = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+    for supuesto in supuestos_inputs :
+        try:
+            supuesto_select = supuesto.find_element(By.XPATH, "..").find_element(By.TAG_NAME, "select")
+            actual_select = Select(supuesto_select)
+            actual_select.select_by_visible_text("No")
+        except:
+            print("")
+
+    # DEDUCCIONES AUTORIZADAS TAB
+    time.sleep(5)
+    while mydriver.switch_to.active_element.accessible_name != "Deducciones autorizadas" :
+        pyautogui.press("tab")
+    pyautogui.press("enter")
+
+    wrapper = mydriver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[3]/div/div[40]/div/div[2]/div")                    
+    elements = wrapper.find_elements(By.XPATH, '*')
+
+    time.sleep(3)
+
+    supuestos_inputs = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+    for supuesto in supuestos_inputs :
+        try:
+            supuesto_select = supuesto.find_element(By.XPATH, "..").find_element(By.TAG_NAME, "select")
+            actual_select = Select(supuesto_select)
+            actual_select.select_by_visible_text("No")
+        except:
+            print("")  
+
+    for element in elements :
+        try:
+            element.find_element(By.CLASS_NAME, "icon-warning-sign") # Si esto pasa, entonces hay que picarle a capturar
+            element.find_element(By.TAG_NAME, "a").click()
+
+            time.sleep(3)
+
+            supuestos_inputs = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+            for supuesto in supuestos_inputs :
+                try:
+                    supuesto.find_element(By.XPATH, "..").find_element(By.TAG_NAME, "input").send_keys("0")
+                    pyautogui.press("tab")
+                except:
+                    print("")
+            
+            time.sleep(3)
+
+            while mydriver.switch_to.active_element.accessible_name != "CERRAR" :
+                pyautogui.press("tab")
+            pyautogui.press("enter")
+
+        except:
+            print("")
+
+    # DERERMINACION TAB
+    time.sleep(3)
+    while mydriver.switch_to.active_element.accessible_name != "Determinación" :
+        pyautogui.press("tab")
+    pyautogui.press("enter")
+
+    supuestos_inputs = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+    for supuesto in supuestos_inputs :
+        try:
+            padre = supuesto.find_element(By.XPATH, "../../..")
+            padre.find_element(By.TAG_NAME, "a").click()
+
+            supuestos_inner = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+            for supuesto_inner in supuestos_inner :
+                try:
+                    supuesto_inner.find_element(By.XPATH, "..").find_element(By.TAG_NAME, "input").send_keys("0")
+                    pyautogui.press("tab")
+                except:
+                    print("")
+            time.sleep(3)
+
+            while mydriver.switch_to.active_element.accessible_name != "CERRAR" :
+                pyautogui.press("tab")
+            pyautogui.press("enter")
+
+        except:
+            print("")  
+    
+    # PAGO TAB
+    time.sleep(3)
+    while mydriver.switch_to.active_element.accessible_name != "Pago" :
+        pyautogui.hotkey("shift", "tab")
+    pyautogui.press("enter")
+
+    time.sleep(3)
+    supuestos_inputs = mydriver.find_elements(By.TAG_NAME, "select")
+    for supuesto in supuestos_inputs :
+        try:
+            actual_select = Select(supuesto)
+            actual_select.select_by_visible_text("No")
+        except:
+            print("")
+    
+def isr_personas_morales(mydriver=None) :
+    supuestos_inputs = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+    for supuesto in supuestos_inputs :
+        try:
+            supuesto_select = supuesto.find_element(By.XPATH, "..").find_element(By.TAG_NAME, "select")
+            actual_select = Select(supuesto_select)
+            actual_select.select_by_visible_text("No")
+        except:
+            print("")
+
+    while mydriver.switch_to.active_element.accessible_name != "Determinación" :
+        pyautogui.hotkey("shift", "tab")
+    pyautogui.press("enter")
+
+    wrapper = mydriver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[3]/div/div[20]/div/div[2]/div")
+    elements = wrapper.find_elements(By.XPATH, '*')
+
+    time.sleep(3)
+
+    for element in elements :
+        try:
+            element.find_element(By.CLASS_NAME, "icon-warning-sign") # Si esto pasa, entonces hay que picarle a capturar
+            element.find_element(By.TAG_NAME, "a").click()
+
+            time.sleep(3)
+
+            supuestos_inputs = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+            for supuesto in supuestos_inputs :
+                try:
+                    supuesto.find_element(By.XPATH, "..").find_element(By.TAG_NAME, "input").send_keys("0")
+                    pyautogui.press("tab")
+                except:
+                    print("")
+            time.sleep(3)
+            pyautogui.press("enter")
+        except:
+            print("")
+
+
+def iva_simplificado_confianza(mydriver=None) :
+    supuestos_inputs = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+    for supuesto in supuestos_inputs :
+        try:
+            padre = supuesto.find_element(By.XPATH, "../../..")
+            padre.find_element(By.TAG_NAME, "a").click()
+
+            supuestos_inner = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+            for supuesto_inner in supuestos_inner :
+                try:
+                    supuesto_inner.find_element(By.XPATH, "..").find_element(By.TAG_NAME, "input").send_keys("0")
+                    pyautogui.press("tab")
+                except:
+                    print("")
+            time.sleep(3)
+
+            while mydriver.switch_to.active_element.accessible_name != "CERRAR" :
+                pyautogui.press("tab")
+            pyautogui.press("enter")
+
+        except:
+            print("")
+
 
 ROOT_PATH = pathlib.Path().resolve()                                    # Directorio raíz
 FIEL_PATH = ROOT_PATH.__str__() + "\\FIEL\\"                            # Directorio donde estan las carpetas de las fieles
-SAVE_PATH = ROOT_PATH.__str__() + "\\SAVE_FISICA_NEW\\"                 # Directorio donde se guardaran los pdfs
-SAVE_OTHER_PATH = ROOT_PATH.__str__() + "\\SAVE_MORAL_NEW\\"            
+SAVE_PATH = ROOT_PATH.__str__() + "\\SAVE_MORAL_NEW\\"                 # Directorio donde se guardaran los pdfs
+SAVE_OTHER_PATH = ROOT_PATH.__str__() + "\\SAVE_FISICA_NEW\\"
 ERRORS_PATH = ROOT_PATH.__str__() + "\\ERRORS_NEW\\"                    # Directorio donde se guardaran los errores
 CURRENT_MONTH = datetime.datetime.now().month                           # El mes actual
 CURRENT_YEAR = datetime.datetime.now().year
@@ -202,13 +363,12 @@ fiel_folders = [d for d in os.listdir(FIEL_PATH) if os.path.isdir(os.path.join(F
 remaining = [rfc for rfc in fiel_folders if getRFCfromTopDirectory(rfc, '_') not in already_downloaded] # Los que faltan por generar
 print("remaining")
 print(remaining)
-
 def main():
 
     for fiel_folder in remaining :
 
         rfc = getRFCfromTopDirectory(fiel_folder, '_')
-        if len(rfc) != 13:
+        if len(rfc) != 12:
             continue
 
         # Ir a la página base
@@ -237,7 +397,7 @@ def main():
         time.sleep(2)
 
         #Wait for posible container-temporales
-        container_temporales = wait_for_timeout(webdriver=mydriver, id="container-temporales", desc="container temporales", timeout=30)
+        container_temporales = wait_for_timeout(webdriver=mydriver, id="container-temporales", desc="container temporales", timeout=10)
 
         if container_temporales != None:
             temporales = container_temporales.find_elements(By.XPATH, "*")
@@ -303,6 +463,11 @@ def main():
             print("No se encuentra pa cerrar")
         else:
             mydriver.find_element(By.ID, "modalPrellenado").click()
+        
+        try:
+            mydriver.find_element(By.ID, "modalPrellenado").click()
+        except:
+            print("")
 
         time.sleep(3)
 
@@ -311,35 +476,47 @@ def main():
         
         for obligacion in obligaciones.find_elements(By.XPATH, "*") :
 
+            obligacion_name = obligacion.find_element(By.TAG_NAME, "p").text
+
             obligacion.find_element(By.TAG_NAME, "span").click()
+
             time.sleep(3)
 
             select = None
-            try:
-                mydriver.find_element(By.XPATH, "//*[text()='Sin actos o actividades']").find_element(By.XPATH, "..").click()
-                select = mydriver.find_element(By.XPATH, "//*[text()='Sin actos o actividades']").find_element(By.XPATH, "..")
-            except: 
-                print("")
 
-            
-            if select != None : # IVA retenciones
-                select_element = Select(select)
-                select_element.select_by_visible_text("Sin actos o actividades")
-            
-            supuestos_inputs = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
-            for supuesto in supuestos_inputs :
+            if obligacion_name == "ISR simplificado de confianza. Personas morales":
+                isr_simplificado_de_confianza_personas_morales(mydriver)
+            elif obligacion_name ==  'ISR personas morales' :
+                isr_personas_morales(mydriver)
+            elif obligacion_name == "IVA simplificado de confianza":
+                iva_simplificado_confianza(mydriver)
+            else:
+
                 try:
-                    supuesto.find_element(By.XPATH, "..").find_element(By.TAG_NAME, "input").send_keys("0")
-                except:
+                    mydriver.find_element(By.XPATH, "//*[text()='Sin actos o actividades']").find_element(By.XPATH, "..").click()
+                    select = mydriver.find_element(By.XPATH, "//*[text()='Sin actos o actividades']").find_element(By.XPATH, "..")
+                except: 
                     print("")
-           
-            if select != None:
-                pyautogui.press("tab")
-                pyautogui.press("enter")
 
-            while mydriver.switch_to.active_element.accessible_name != "Pago":
-                pyautogui.hotkey("shift", "tab")
-            pyautogui.press("enter")
+                if select != None : # IVA retenciones
+                    select_element = Select(select)
+                    select_element.select_by_visible_text("Sin actos o actividades")
+                
+                supuestos_inputs = mydriver.find_elements(By.CLASS_NAME, "icon-warning-sign")
+                for supuesto in supuestos_inputs :
+                    try:
+                        supuesto.find_element(By.XPATH, "..").find_element(By.TAG_NAME, "input").send_keys("0")
+                    except:
+                        print("")
+            
+                if select != None:
+                    pyautogui.press("tab")
+                    pyautogui.press("enter")
+
+            if obligacion_name != "ISR simplificado de confianza. Personas morales":
+                while mydriver.switch_to.active_element.accessible_name != "Pago" :
+                    pyautogui.hotkey("shift", "tab")
+                pyautogui.press("enter")
         
             if select != None:
                 pyautogui.click(pyautogui.locateOnScreen("aceptar.png"))
@@ -347,19 +524,32 @@ def main():
             time.sleep(3)
             mydriver.find_element(By.XPATH, "//*[text()='GUARDAR']").click()
             time.sleep(3)
-
             mydriver.find_element(By.XPATH, "//*[text()='Administración de la declaración']").click()
-
             time.sleep(3)
 
         mydriver.find_element(By.ID, "btnEnviaDec").click()
 
         time.sleep(3)
 
-        pyautogui.click(pyautogui.locateOnScreen("si.png"))
+        pyautogui.press("enter")
+        #pyautogui.click(pyautogui.locateOnScreen("si.png"))
+
+
+        wait_for(webdriver=mydriver, id="btnCert", desc="otro login")
+
+        # Se va a necesitar hacer el login otra vez
+        time.sleep(3)
+        click_element_write_and_press_enter(web_driver=mydriver, elementId="btnCert", fiel_folder=fiel_folder, save_path=ERRORS_PATH, write=ruta_certificado)
+        time.sleep(3)
+        click_element_write_and_press_enter(web_driver=mydriver, elementId="btnPrivateKey", fiel_folder=fiel_folder, save_path=ERRORS_PATH, write=ruta_clave_privada)
+        time.sleep(3)
+        click_element_write_and_press_enter(web_driver=mydriver, elementId="pwdLlavePriv", fiel_folder=fiel_folder, save_path=ERRORS_PATH, write=password)
+        
+        time.sleep(3)
+        click_element(web_driver=mydriver, elementId="btnEnviarForm", fiel_folder=fiel_folder, save_path=ERRORS_PATH)
+
 
         flag = True
-
         while flag :
             try: 
                 mydriver.find_element(By.XPATH, "//*[text()='DESCARGAR']").send_keys("")
